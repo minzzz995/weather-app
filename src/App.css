@@ -18,11 +18,15 @@ body{
     background-color: azure;
     margin-bottom: 20px;
 }
+
 .weather-buttons {
     display: flex;
     gap: 10px;
 }
 
-.weather-button {
+.weather-button.selected {
+    background-color: black !important;
+    color: white;
     font-weight: bold !important;
+    border: 2px solid black !important;
 }

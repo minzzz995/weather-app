@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from 'react';
 import WeatherBox from './component/WeatherBox';
 import WeatherButton from './component/WeatherButton';
+import ClipLoader from "react-spinners/ClipLoader";
 
 // 1. 앱이 실행되자마자 현재위치기반의 날씨가 보임
 // 2. 날씨정보에는 도시, 섭씨, 화씨 날씨상태정보가 들어감
@@ -14,6 +15,11 @@ import WeatherButton from './component/WeatherButton';
 function App() {
 
   const [weather, setWeather] = useState(null);
+  const [city, setCity] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [selectedCity, setSelectedCity] = useState('');
+  
+  const cities=["Barcelona", "Rome", "tokyo", "seoul"];
 
   const getCurrentLocation=()=>{
     navigator.geolocation.getCurrentPosition((position)=>{
@@ -23,24 +29,51 @@ function App() {
       getWeatherByCurrentLocation(lat, lon);
     });
   }
+  
+  useEffect(()=>{
+    if(city=="") {
+      getCurrentLocation();
+    } else {
+      getWeatherByCity();
+    }
+  },[city]);
 
   const getWeatherByCurrentLocation = async(lat, lon) => {
     let url =  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=0252dcb54d0c04d9d81ac75312df1393&units=metric`;
+    setLoading(true);
     let response = await fetch(url);
     let data = await response.json();
     setWeather(data);
+    setLoading(false);
+    setSelectedCity('');
   }
 
-  useEffect(()=>{
-    getCurrentLocation()
-  },[])
+  const getWeatherByCity = async() => {
+    let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=0252dcb54d0c04d9d81ac75312df1393&units=metric`;
+    setLoading(true);
+    let response = await fetch(url);
+    let data = await response.json();
+    setWeather(data);
+    setLoading(false);
+  }
+
+  // useEffect는 UI가 처음에 그려졌을 때, 배열에 있는 state값이 바뀔 때마다 호출
+  // useEffect(()=>{
+  //   getWeatherByCity();
+  // }, [city])
 
   return (
     <div>
-      <div class="container">
+      {loading ? (
+        <div class="container">  
+          <ClipLoader color="#4B89DC" loading={loading} size={150} />
+        </div>
+      ) : (
+        <div class="container">       
         <WeatherBox weather={weather}/>
-        <WeatherButton />
+        <WeatherButton cities={cities} setCity={setCity} selectedCity={selectedCity} setSelectedCity={setSelectedCity} />
       </div>
+      )}
     </div>
   );
 }
